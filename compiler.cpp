@@ -695,6 +695,160 @@ void syntex_process() {
     }
 }
 
+//字母时间漂移
+void time_shift(int hour,int minute,int second,int mse) {
+    second += (mse / 1000);
+    mse %= 1000;
+
+    minute += (second / 60);
+    second %= 60;
+
+    hour += (minute / 60);
+    minute %= 60;
+
+    hour %= 24;
+
+    for (int i = 0; i < subt_array.size(); i ++ ) {
+        subt_array[i].begin.msecond += mse;
+        subt_array[i].begin.second += second;
+        subt_array[i].begin.minute += minute;
+        subt_array[i].begin.hour += hour;
+
+        subt_array[i].begin.second += (subt_array[i].begin.msecond / 1000);
+        subt_array[i].begin.msecond %= 1000;
+
+        subt_array[i].begin.minute += (subt_array[i].begin.second / 60);
+        subt_array[i].begin.second %= 60;
+
+        subt_array[i].begin.hour += (subt_array[i].begin.minute / 60);
+        subt_array[i].begin.minute %= 60;
+
+        subt_array[i].begin.hour %= 24;
+
+
+        subt_array[i].end.msecond += mse;
+        subt_array[i].end.second += second;
+        subt_array[i].end.minute += minute;
+        subt_array[i].end.hour += hour;
+
+        subt_array[i].end.second += (subt_array[i].begin.msecond / 1000);
+        subt_array[i].end.msecond %= 1000;
+
+        subt_array[i].end.minute += (subt_array[i].begin.second / 60);
+        subt_array[i].end.second %= 60;
+
+        subt_array[i].end.hour += (subt_array[i].end.minute / 60);
+        subt_array[i].end.minute %= 60;
+
+        subt_array[i].end.hour %= 24;
+
+    }
+}
+
+//添加字体颜色和标签
+void add_feature_all(int font, string color) {
+    string fea_str;
+    fea_str.append("<");
+    if (font > 0) {
+        fea_str.append("fond=");
+        fea_str.append(to_string(font));
+        fea_str.append(",");
+    }
+    if (color[0]!='#') {
+        fea_str.append("volor=");
+        fea_str.append(color);
+    }
+    fea_str.append(">");
+    for (int i = 0; i < subt_array.size(); i++) {
+        string str;
+        str.append(fea_str);
+        str.append(subt_array[i].content);
+        str.append("</fc>");
+        subt_array[i].content = str;
+    }
+}
+
+void add_feature_one(int font, string color,int index) {
+    string fea_str;
+    fea_str.append("<");
+    if (font > 0) {
+        fea_str.append("fond=");
+        fea_str.append(to_string(font));
+        fea_str.append(",");
+    }
+    if (color[0] != '#') {
+        fea_str.append("volor=");
+        fea_str.append(color);
+    }
+    fea_str.append(">");
+  
+    string str;
+    str.append(fea_str);
+    str.append(subt_array[index].content);
+    str.append("</fc>");
+    subt_array[index].content = str;
+ 
+}
+
+//更新字幕文件
+void update_caption() {
+    ofstream fout;
+    fout.open("C:\\Users\\Administrator\\CLionProjects\\cpractise\\caption_update.txt");
+    for (int i = 0; i < subt_array.size(); i++) {
+        fout << subt_array[i].sid << endl;
+        if (subt_array[i].begin.hour < 10) {
+            fout << "0";
+        }
+        fout << subt_array[i].begin.hour;
+        fout << ":";
+        if (subt_array[i].begin.minute < 10) {
+            fout << "0";
+        }
+        fout << subt_array[i].begin.minute;
+        fout << ":";
+        if (subt_array[i].begin.second < 10) {
+            fout << "0";
+        }
+        fout << subt_array[i].begin.second;
+        fout << ",";
+        if (subt_array[i].begin.msecond < 100) {
+            fout << "0";
+        }
+        if (subt_array[i].begin.msecond < 10) {
+            fout << "0";
+        }
+        fout << subt_array[i].begin.msecond;
+
+        fout << " --> ";
+        
+        if (subt_array[i].end.hour < 10) {
+            fout << "0";
+        }
+        fout << subt_array[i].end.hour;
+        fout << ":";
+        if (subt_array[i].end.minute < 10) {
+            fout << "0";
+        }
+        fout << subt_array[i].end.minute;
+        fout << ":";
+        if (subt_array[i].end.second < 10) {
+            fout << "0";
+        }
+        fout << subt_array[i].end.second;
+        fout << ",";
+        if (subt_array[i].end.msecond < 100) {
+            fout << "0";
+        }
+        if (subt_array[i].end.msecond < 10) {
+            fout << "0";
+        }
+        fout << subt_array[i].end.msecond;
+        fout << endl;
+        fout << subt_array[i].content<<endl<<endl;
+
+    }
+}
+
 //添加文法规
 
 //递归下降法
@@ -806,6 +960,13 @@ int main() {
     //
         //evaluate_code();
         evaluate_code_vector();
+
+        time_shift(0,0,65,0);
+        //对所有字母字幕替换
+        add_feature_all(10, "red");
+        //对单个字幕单位替换
+        //add_feature_one(10, "red",11);
+        update_caption();
         cout << "finished"  << endl;
 }
 
